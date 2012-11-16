@@ -32,6 +32,7 @@ class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1)
+    rank = models.IntegerField()
 
 
 class Directory(models.Model):
