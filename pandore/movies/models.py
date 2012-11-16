@@ -15,9 +15,9 @@ class Movie(models.Model):
     nb_rates = models.IntegerField(verbose_name='number of rates')
     plot = models.TextField()
     genres = models.ManyToManyField(Genre)
-    persons = models.ManyToManyField(Person, verbose_name='list of people involved', through='Contributors')
+    persons = models.ManyToManyField(Person, verbose_name='list of people involved', through='MovieContributors')
 
-class Contributors(models.Model):
+class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1)
