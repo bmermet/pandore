@@ -6,6 +6,8 @@ from imdb import IMDb
 from movies.models import Movie, Genre, MovieContributors, Directory
 from people.models import Person
 
+#TODO replace None values by empty strings
+
 
 class DirectoryProcessor(object):
     __reg_dir_s = r'(.*/)?(.+)'
@@ -30,9 +32,8 @@ class DirectoryProcessor(object):
         if existing:
             print 'Directory is already present in the database'
             return False
-        dir = self.__reg_dir.match(self.directory).group(2)
+        dir = self.__reg_dir.match(self.directory).group(2) + '/'
         guess = guessit.guess_movie_info(dir)
-        print guess.nice_string()
         if not ('title' and 'year') in guess:
             print 'Error while processsing ' + self.directory
             return False
@@ -59,12 +60,12 @@ class DirectoryProcessor(object):
         m = self.movie.process(self.id_imdb)
         Directory.objects.create(
                 movie=m, location=self.directory,
-                quality=self.quality, size=10)
+                quality=self.quality, size=None)
 
 
 class MovieProcessor(object):
-    __reg_title_vf_s = r'(.+)::France'
-    __reg_title_int_s = r'(.+)::France'
+    __reg_title_vf_s = r'(.+)::.*France'
+    __reg_title_int_s = r'(.+)::.*International'
     title = title_fr = year = runtime = id_imdb = poster = rating = None
     votes = plot = language = genres = persons = None
     imdb_infos = None
@@ -75,9 +76,9 @@ class MovieProcessor(object):
         self.ia = IMDb()
 
     def reset_infos(self):
-        self.title = self.title_fr = self.year = self.runtime = None
-        self.id_imdb = self.poster = self.rating = self.votes = None
-        self.plot = self.language = None
+        self.title = self.title_fr = self.id_imdb = self.poster = ''
+        self.plot = self.language = ''
+        self.year = self.runtime = self.rating = self.votes = None
         self.genres = []
         self.persons = {'cast': [], 'director': [], 'writer': []}
         self.imdb_infos = None
