@@ -21,10 +21,22 @@ class Series(models.Model):
     end_year = models.IntegerField(verbose_name='end year')
     alias = models.CharField(max_length=16, verbose_name='series\' alias')
 
+    def update_counts(self):
+        c = 0
+        for s in self.season_set.all():
+            c += s.number_of_episodes
+        self.number_of_episodes = c
+        self.number_of_seasons = self.season_set.count()
+
+
 class Season(models.Model):
     series = models.ForeignKey(Series)
     season_number = models.IntegerField(verbose_name='season number')
     number_of_episodes = models.IntegerField(verbose_name='number of episodes')
+
+    def update_counts(self):
+        self.number_of_episodes = self.episode_set.count()
+
 
 class Episode(models.Model):
     season = models.ForeignKey(Season)
@@ -39,6 +51,7 @@ class Episode(models.Model):
     date = models.DateField()
     runtime = models.IntegerField()
     persons = models.ManyToManyField(Person, verbose_name='list of people involved', through='EpisodeContributors')
+
 
 class SeriesContributors(models.Model):
     person = models.ForeignKey(Person)
