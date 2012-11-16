@@ -5,6 +5,9 @@ from people.models import Person
 class Genre(models.Model):
     name = models.CharField(max_length=128)
 
+    def __unicode__(self):
+        return 'name : ' + self.name
+
 
 class Movie(models.Model):
     PROFESSION_CODE = (
@@ -29,12 +32,18 @@ class Movie(models.Model):
             verbose_name='list of people involved',
             through='MovieContributors')
 
+    def __unicode__(self):
+        return 'title : ' + self.title + '; id_imdb : ' + self.id_imdb
+
 
 class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1)
     rank = models.IntegerField()
+
+    def __unicode__(self):
+        return 'person : ' + self.person.name + '; movie : ' + self.movie.title
 
 
 class Directory(models.Model):
@@ -44,3 +53,6 @@ class Directory(models.Model):
     size = models.IntegerField(verbose_name='size in MB')
     addition_date = models.DateTimeField(auto_now_add=True,
             verbose_name='addition date')
+
+    def __unicode__(self):
+        return 'movie : ' + self.movie.title + 'location : ' + self.location
