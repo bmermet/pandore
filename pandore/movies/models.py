@@ -1,10 +1,17 @@
 from django.db import models
 from people.models import Person
 
+
 class Genre(models.Model):
     name = models.CharField(max_length=128)
 
+
 class Movie(models.Model):
+    PROFESSION_CODE = (
+            ('A', 'Actor'),
+            ('D', 'Director'),
+            ('W', 'Writer'),
+            )
     title = models.CharField(max_length=256, verbose_name='original title')
     title_fr = models.CharField(max_length=256, verbose_name='french title')
     year = models.IntegerField()
@@ -16,12 +23,16 @@ class Movie(models.Model):
     plot = models.TextField()
     language = models.CharField(max_length=2, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
-    persons = models.ManyToManyField(Person, verbose_name='list of people involved', through='MovieContributors')
+    persons = models.ManyToManyField(Person,
+            verbose_name='list of people involved',
+            through='MovieContributors')
+
 
 class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1)
+
 
 class Directory(models.Model):
     movie = models.ForeignKey(Movie)
