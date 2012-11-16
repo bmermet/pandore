@@ -19,7 +19,7 @@ class Movie(models.Model):
     id_imdb = models.CharField(max_length=7, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
     rating = models.FloatField()
-    nb_rates = models.IntegerField(verbose_name='number of rates')
+    votes = models.IntegerField(verbose_name='number of votes')
     plot = models.TextField()
     language = models.CharField(max_length=2, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
