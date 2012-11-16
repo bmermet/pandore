@@ -14,6 +14,7 @@ class Movie(models.Model):
     rating = models.FloatField()
     nb_rates = models.IntegerField(verbose_name='number of rates')
     plot = models.TextField()
+    language = models.CharField(max_length=2, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
     persons = models.ManyToManyField(Person, verbose_name='list of people involved', through='MovieContributors')
 
@@ -27,3 +28,4 @@ class Directory(models.Model):
     location = models.CharField(max_length=256)
     quality = models.CharField(max_length=5)
     size = models.IntegerField(verbose_name='size in MB')
+    addition_date = models.DateTimeField(verbose_name='addition date')
