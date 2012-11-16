@@ -3,7 +3,7 @@ from people.models import Person
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)
 
     def __unicode__(self):
         return 'name : ' + self.name
@@ -21,7 +21,8 @@ class Movie(models.Model):
             verbose_name='international title')
     year = models.IntegerField()
     runtime = models.IntegerField()
-    id_imdb = models.CharField(max_length=7, verbose_name='imdb id')
+    id_imdb = models.CharField(
+            max_length=7, unique=True, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
     rating = models.FloatField()
     votes = models.IntegerField(verbose_name='number of votes')
@@ -48,7 +49,7 @@ class MovieContributors(models.Model):
 
 class Directory(models.Model):
     movie = models.ForeignKey(Movie)
-    location = models.CharField(max_length=256)
+    location = models.CharField(max_length=256, unique=True)
     quality = models.CharField(max_length=5)
     size = models.IntegerField(verbose_name='size in MB')
     addition_date = models.DateTimeField(auto_now_add=True,
