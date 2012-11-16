@@ -31,6 +31,7 @@ class Series(models.Model):
             c += s.number_of_episodes
         self.number_of_episodes = c
         self.number_of_seasons = self.season_set.count()
+        self.save()
 
 
 class Season(models.Model):
@@ -40,6 +41,7 @@ class Season(models.Model):
 
     def update_counts(self):
         self.number_of_episodes = self.episode_set.count()
+        self.save()
 
 
 class Episode(models.Model):
