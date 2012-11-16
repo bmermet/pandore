@@ -14,6 +14,8 @@ class Movie(models.Model):
             )
     title = models.CharField(max_length=256, verbose_name='original title')
     title_fr = models.CharField(max_length=256, verbose_name='french title')
+    title_int = models.CharField(max_length=256,
+            verbose_name='international title')
     year = models.IntegerField()
     runtime = models.IntegerField()
     id_imdb = models.CharField(max_length=7, verbose_name='imdb id')
