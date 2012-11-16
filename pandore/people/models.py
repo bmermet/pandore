@@ -9,10 +9,10 @@ class Person(models.Model):
     def __unicode__(self):
         return 'id_imdb: ' + self.id_imdb + '; name: ' + self.name
 
-    def add(person):
+    @classmethod
+    def add(cls, person):
         p = Person.objects.filter(id_imdb=person.personID)
         if len(p):
             return p[0]
-        p = Person(id_imdb=person.personID, name=person['name'])
-        p.save()
+        p = Person.objects.create(id_imdb=person.personID, name=person['name'])
         return p

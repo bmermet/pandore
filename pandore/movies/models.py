@@ -5,6 +5,13 @@ from people.models import Person
 class Genre(models.Model):
     name = models.CharField(max_length=128, unique=True)
 
+    @classmethod
+    def add(cls, genre):
+        g = Genre.objects.filter(name=genre)
+        if len(g):
+            return g[0]
+        return Genre.objects.create(name=genre)
+
     def __unicode__(self):
         return 'name : ' + self.name
 
