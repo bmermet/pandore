@@ -26,13 +26,13 @@ class Movie(models.Model):
     title_fr = models.CharField(max_length=256, verbose_name='french title')
     title_int = models.CharField(max_length=256,
             verbose_name='international title')
-    year = models.IntegerField()
-    runtime = models.IntegerField()
+    year = models.IntegerField(null=True)
+    runtime = models.IntegerField(null=True)
     id_imdb = models.CharField(
             max_length=7, unique=True, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
-    rating = models.FloatField()
-    votes = models.IntegerField(verbose_name='number of votes')
+    rating = models.FloatField(null=True)
+    votes = models.IntegerField(null=True, verbose_name='number of votes')
     plot = models.TextField()
     language = models.CharField(max_length=2, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
@@ -41,14 +41,14 @@ class Movie(models.Model):
             through='MovieContributors')
 
     def __unicode__(self):
-        return 'title : ' + self.title + '; id_imdb : ' + self.id_imdb
+        return 'title : ' + self.title_int + '; id_imdb : ' + self.id_imdb
 
 
 class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1)
-    rank = models.IntegerField()
+    rank = models.IntegerField(null=True)
 
     def __unicode__(self):
         return 'person : ' + self.person.name + '; movie : ' + self.movie.title
@@ -58,7 +58,7 @@ class Directory(models.Model):
     movie = models.ForeignKey(Movie)
     location = models.CharField(max_length=256, unique=True)
     quality = models.CharField(max_length=5)
-    size = models.IntegerField(verbose_name='size in MB')
+    size = models.IntegerField(null=True, verbose_name='size in MB')
     addition_date = models.DateTimeField(auto_now_add=True,
             verbose_name='addition date')
 

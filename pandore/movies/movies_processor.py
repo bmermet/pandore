@@ -60,7 +60,7 @@ class DirectoryProcessor(object):
         m = self.movie.process(self.id_imdb)
         Directory.objects.create(
                 movie=m, location=self.directory,
-                quality=self.quality, size=10)
+                quality=self.quality, size=None)
 
 
 class MovieProcessor(object):
