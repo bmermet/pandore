@@ -39,4 +39,4 @@ class Directory(models.Model):
     location = models.CharField(max_length=256)
     quality = models.CharField(max_length=5)
     size = models.IntegerField(verbose_name='size in MB')
-    addition_date = models.DateTimeField(verbose_name='addition date')
+    addition_date = models.DateTimeField(auto_now_add=True, verbose_name='addition date')
