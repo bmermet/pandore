@@ -1,4 +1,7 @@
 from django.conf.urls import patterns, include, url
+from haystack.views import SearchView
+from haystack.query import SearchQuerySet
+from movies.advanced_movie_search import AdvancedMovieSearchForm
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -15,5 +18,9 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-    (r'^search/', include('haystack.urls')),
+    # Movie search
+    url(r'^search/', SearchView(
+        template='search/search.html',
+        form_class=AdvancedMovieSearchForm
+        ), name='haystack.urls'),
 )
