@@ -13,7 +13,7 @@ class Genre(models.Model):
         return Genre.objects.create(name=genre)
 
     def __unicode__(self):
-        return 'name : ' + self.name
+        return 'Name : ' + self.name
 
 
 class Movie(models.Model):
@@ -41,7 +41,7 @@ class Movie(models.Model):
             through='MovieContributors')
 
     def __unicode__(self):
-        return 'title : ' + self.title_int + '; id_imdb : ' + self.id_imdb
+        return 'Title : ' + self.title_int + '; Id_imdb : ' + self.id_imdb
 
 
 class MovieContributors(models.Model):
@@ -51,7 +51,7 @@ class MovieContributors(models.Model):
     rank = models.IntegerField(null=True)
 
     def __unicode__(self):
-        return 'person : ' + self.person.name + '; movie : ' + self.movie.title
+        return 'Person : ' + self.person.name + '; Movie : ' + self.movie.title
 
 
 class Directory(models.Model):
@@ -63,4 +63,6 @@ class Directory(models.Model):
             verbose_name='addition date')
 
     def __unicode__(self):
-        return 'movie : ' + self.movie.title + 'location : ' + self.location
+        return (
+                'Movie : ' + self.movie.title_int + '; Location : '
+                + self.location)

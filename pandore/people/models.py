@@ -7,7 +7,7 @@ class Person(models.Model):
     name = models.CharField(max_length=128)
 
     def __unicode__(self):
-        return 'id_imdb: ' + self.id_imdb + '; name: ' + self.name
+        return 'Id_imdb: ' + self.id_imdb + '; Name: ' + self.name
 
     @classmethod
     def add(cls, person):
