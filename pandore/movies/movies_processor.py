@@ -5,8 +5,7 @@ import os
 from imdb import IMDb
 from movies.models import Movie, Genre, MovieContributors, Directory
 from people.models import Person
-
-#TODO replace None values by empty strings
+from utils import get_size
 
 
 class DirectoryProcessor(object):
@@ -53,6 +52,9 @@ class DirectoryProcessor(object):
             self.quality = guess['screenSize']
         else:
             self.quality = 'SD'
+        #Size of the directory in Mo
+        #TODO understand why the result is different from du
+        self.size = (get_size(self.directory) + 500000) // 1000000
         self.save()
         return True
 
@@ -60,7 +62,7 @@ class DirectoryProcessor(object):
         m = self.movie.process(self.id_imdb)
         Directory.objects.create(
                 movie=m, location=self.directory,
-                quality=self.quality, size=None)
+                quality=self.quality, size=self.size)
 
 
 class MovieProcessor(object):
