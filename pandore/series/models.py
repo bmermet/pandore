@@ -5,14 +5,26 @@ from people.models import Person
 class Genre(models.Model):
     name = models.CharField(max_length=128)
 
+    @classmethod
+    def add(cls, genre):
+        g = Genre.objects.filter(name=genre)
+        if len(g):
+            return g[0]
+        return Genre.objects.create(name=genre)
+
+    def __unicode__(self):
+        return 'Name : ' + self.name
+
 
 class Series(models.Model):
     title = models.CharField(max_length=256, verbose_name='original title')
     title_fr = models.CharField(max_length=256, verbose_name='french title')
+    title_int = models.CharField(max_length=256,
+            verbose_name='international title')
     id_imdb = models.CharField(max_length=7, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
     rating = models.FloatField()
-    nb_rates = models.IntegerField(verbose_name='number of rates')
+    votes = models.IntegerField(verbose_name='number of votes')
     plot = models.TextField()
     language = models.CharField(max_length=2, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
@@ -32,6 +44,9 @@ class Series(models.Model):
         self.number_of_episodes = c
         self.number_of_seasons = self.season_set.count()
         self.save()
+
+    def __unicode__(self):
+        return 'Title : ' + self.title_int + '; Id_imdb : ' + self.id_imdb
 
 
 class Season(models.Model):
@@ -65,6 +80,10 @@ class SeriesContributors(models.Model):
     person = models.ForeignKey(Person)
     series = models.ForeignKey(Series)
     function = models.CharField(max_length=1)
+    rank = models.IntegerField(null=True)
+
+    def __unicode__(self):
+        return 'Person : ' + self.person.name + '; Series : ' + self.series.title
 
 
 class EpisodeContributors(models.Model):
