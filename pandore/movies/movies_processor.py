@@ -37,7 +37,7 @@ class DirectoryProcessor(object):
         dir = self.__reg_dir.match(self.directory).group(2) + '/'
         guess = guessit.guess_movie_info(dir.decode('utf-8'))
         if not ('title' and 'year') in guess:
-            print 'Error while processsing ' + self.directory
+            print 'Error while processing ' + self.directory
             return False
         search_string = 'site:imdb.com %s %s' % (
                 guess['title'], str(guess['year']))
