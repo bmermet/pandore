@@ -8,6 +8,9 @@ from people.models import Person
 from utils import get_size
 
 
+__DEBUG__ = True
+
+
 class DirectoryProcessor(object):
     __reg_dir_s = r'(.*/)?(.+)'
     __reg_bing_s = r'www.imdb.com/title/tt(?P<id>\d+)/'
@@ -32,7 +35,7 @@ class DirectoryProcessor(object):
             print 'Directory is already present in the database'
             return False
         dir = self.__reg_dir.match(self.directory).group(2) + '/'
-        guess = guessit.guess_movie_info(dir)
+        guess = guessit.guess_movie_info(dir.decode('utf-8'))
         if not ('title' and 'year') in guess:
             print 'Error while processsing ' + self.directory
             return False
@@ -68,6 +71,7 @@ class DirectoryProcessor(object):
 class MovieProcessor(object):
     __reg_title_vf_s = r'(.+)::.*France'
     __reg_title_int_s = r'(.+)::.*International'
+    __reg_runtime_s = r'\d+'
     title = title_fr = year = runtime = id_imdb = poster = rating = None
     votes = plot = language = genres = persons = None
     imdb_infos = None
@@ -75,6 +79,7 @@ class MovieProcessor(object):
     def __init__(self):
         self.__reg_title_vf = re.compile(self.__reg_title_vf_s)
         self.__reg_title_int = re.compile(self.__reg_title_int_s)
+        self.__reg_runtime = re.compile(self.__reg_runtime_s)
         self.ia = IMDb()
 
     def reset_infos(self):
@@ -125,7 +130,9 @@ class MovieProcessor(object):
         else:
             self.title_int = self.title
         if 'runtimes' in self.imdb_infos.keys():
-            self.runtime = self.imdb_infos['runtimes'][0]
+            match = self.__reg_runtime.search(self.imdb_infos['runtimes'][0])
+            if match:
+                self.runtime = match.group(0)
         if 'cover url' in self.imdb_infos.keys():
             self.poster = self.imdb_infos['cover url']
         if 'rating' in self.imdb_infos.keys():
@@ -149,6 +156,20 @@ class MovieProcessor(object):
         return m
 
     def save(self):
+        if __DEBUG__:
+            print "title : " + self.title
+            print "title_fr : " + self.title_fr
+            print "title_int : " + self.title_int
+            print "year : " + str(self.year)
+            if self.runtime:
+                print "runtime : " + self.runtime
+            print "poster : " + self.poster
+            if self.rating:
+                print "rating : " + str(self.rating)
+            if self.votes:
+                print "votes : " + str(self.votes)
+            print "plot : " + self.plot
+            print "language : " + self.language
         m = Movie.objects.create(
                 title=self.title, title_fr=self.title_fr,
                 title_int=self.title_int, year=self.year,
