@@ -17,11 +17,6 @@ class Genre(models.Model):
 
 
 class Movie(models.Model):
-    PROFESSION_CODE = (
-            ('A', 'Actor'),
-            ('D', 'Director'),
-            ('W', 'Writer'),
-            )
     title = models.CharField(max_length=256, verbose_name='original title')
     title_fr = models.CharField(max_length=256, verbose_name='french title')
     title_int = models.CharField(max_length=256,
@@ -45,9 +40,14 @@ class Movie(models.Model):
 
 
 class MovieContributors(models.Model):
+    PROFESSION_CODE = (
+            ('A', 'Actor'),
+            ('D', 'Director'),
+            ('W', 'Writer'),
+            )
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
-    function = models.CharField(max_length=1)
+    function = models.CharField(max_length=1, choices=PROFESSION_CODE)
     rank = models.IntegerField(null=True)
 
     def __unicode__(self):
