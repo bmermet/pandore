@@ -85,9 +85,14 @@ class Episode(models.Model):
 
 
 class SeriesContributors(models.Model):
+    PROFESSION_CODE = (
+            ('A', 'Actor'),
+            ('D', 'Director'),
+            ('W', 'Writer'),
+            )
     person = models.ForeignKey(Person)
     series = models.ForeignKey(Series)
-    function = models.CharField(max_length=1)
+    function = models.CharField(max_length=1, choices=PROFESSION_CODE)
     rank = models.IntegerField(null=True)
 
     def __unicode__(self):
@@ -95,9 +100,14 @@ class SeriesContributors(models.Model):
 
 
 class EpisodeContributors(models.Model):
+    PROFESSION_CODE = (
+            ('A', 'Actor'),
+            ('D', 'Director'),
+            ('W', 'Writer'),
+            )
     person = models.ForeignKey(Person)
     episode = models.ForeignKey(Episode)
-    function = models.CharField(max_length=1)
+    function = models.CharField(max_length=1, choices=PROFESSION_CODE)
     rank = models.IntegerField(null=True)
 
     def __unicode__(self):
