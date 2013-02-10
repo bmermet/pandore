@@ -2,6 +2,7 @@ import guessit
 import requests
 import re
 import os
+from dateutil import parser as dateparse
 from datetime import date
 from imdb import IMDb
 from series.models import (Series, Season, Episode, Genre, SeriesContributors,
@@ -23,7 +24,7 @@ class SeriesDirectoryProcessor(object):
         self.__reg_episode = re.compile(self.__reg_episode_s)
         self.reset_infos()
         self.series_processor = SeriesProcessor()
-        self.episode_dir_processor = EpisodeProcessor()
+        self.episode_dir_processor = EpisodeDirectoryProcessor()
         self.ia = IMDb()
         self.series_on_imdb = None
 
@@ -45,11 +46,13 @@ class SeriesDirectoryProcessor(object):
 
         filter = SeriesDirectory.objects.filter(location=self.directory)
         if filter.exists():
-            self.series = filter[0]
+            self.series = filter[0].series
+            self.id_imdb = self.series.id_imdb
         else:
             # Search series on bing
             self.year = str(guess['year']) if 'year' in guess else ''
-            search_string = 'site:imdb.com %s %s' % (guess['title'], year)
+            search_string = 'site:imdb.com tv series %s %s' % (
+                    guess['title'], self.year)
             r = requests.get(
                     'http://www.bing.com/search', params={'q': search_string})
             match = self.__reg_bing.search(r.content)
@@ -58,22 +61,28 @@ class SeriesDirectoryProcessor(object):
                 print "Bing wasn't able to find this series, skipping"
                 return False
             self.id_imdb = match.group('id')
+            print self.id_imdb
             self.title = guess['title']
             self.save()
 
         # Search episodes in series directory
         dirs = [self.directory]
         for d in dirs:
+            print d
             if not self.__reg_episode.search(d):
-                for d2 in [d+dir+'/' for dir in os.listdir(d)
-                           if os.path.isdir(d+dir)]:
-                    dirs.append(d2)
+                for d2 in [d+'/'+dir for dir in os.listdir(d)
+                           if os.path.isdir(d+'/'+dir)]:
+                    dirs.append(os.path.abspath(d2))
             else:
-                if not self.series_on_imdb:
-                    self.series_on_imdb = self.ia.get_movie(self.series.id_imdb)
-                    self.ia.update(self.series_on_imdb, 'episodes')
-                self.episode_dir_processor.process(d, self.series,
-                        self.series_on_imdb['episodes'])
+                # Check if the episode is already in database
+                filter = EpisodeDirectory.objects.filter(location=d)
+                if not filter.exists():
+                    if not self.series_on_imdb:
+                        self.series_on_imdb = self.ia.get_movie(
+                                self.id_imdb)
+                        self.ia.update(self.series_on_imdb, 'episodes')
+                    self.episode_dir_processor.process(d, self.series,
+                            self.series_on_imdb['episodes'])
 
         return True
 
@@ -83,7 +92,7 @@ class SeriesDirectoryProcessor(object):
             series=self.series, location=self.directory)
 
 
-class EpisodeDirectoryProcessor()
+class EpisodeDirectoryProcessor():
     title = quality = year = id_imdb = None
 
     def __init__(self):
@@ -102,17 +111,23 @@ class EpisodeDirectoryProcessor()
         self.filename = os.path.basename(self.path)
         self.season_directory = os.path.dirname(self.path)
 
-        guess = guessit.guess_movie_info(self.filename)
-        if 'season' in guess.keys and 'episodeNumber' in guess.keys:
+        # Check if the episode is already in database
+        filter = EpisodeDirectory.objects.filter(location=self.path)
+        if filter.exists():
+            return filter[0]
+
+        # Extract infos from directory name
+        guess = guessit.guess_episode_info(self.filename)
+        if 'season' in guess.keys() and 'episodeNumber' in guess.keys():
             self.season_nb = guess['season']
-            self.episode_nb = guess.['episodeNumber']
+            self.episode_nb = guess['episodeNumber']
         else:
             print self.path
             print 'Error: Episode wrongly named'
             return
-        :
         self.quality = guess['screenSize'] if 'screenSize' in guess else 'SD'
 
+        # Create Season
         filter = Season.objects.filter(series=series_bdd,
                                        season_number=self.season_nb)
         if filter.exists():
@@ -137,13 +152,21 @@ class EpisodeDirectoryProcessor()
         if filter.exists():
             self.episode = filter[0]
         else:
-            if self.season_nb in series_imdb.keys() and
-                    self.episode_nb in series_imdb[self.season_nb].keys():
+            if (self.season_nb in series_imdb.keys() and
+                    self.episode_nb in series_imdb[self.season_nb].keys()):
                 self.episode = self.episode_processor.process(
-                        series_imdb[self.season_nb][self.episode_nb])
+                        series_imdb[self.season_nb][self.episode_nb].movieID,
+                        self.season, self.episode_nb)
 
-        #TODO: Create Episode Directory
-        #filter = EpisodeDirectory.objects.filter(
+        #Size of the directory in Mo
+        #TODO understand why the result is different from du
+        self.size = (get_size(self.path) + 500000) // 1000000
+
+        # Finally, create the EpisodeDirectory
+        return EpisodeDirectory.objects.create(episode=self.episode,
+                                               location=self.path,
+                                               quality=self.quality,
+                                               size=self.size)
 
 
 class SeriesProcessor(object):
@@ -161,7 +184,7 @@ class SeriesProcessor(object):
     def reset_infos(self):
         self.title = self.title_fr = self.id_imdb = self.poster = ''
         self.plot = self.language = ''
-        self._begin_year = self._end_year = self.runtime = None
+        self.begin_year = self.end_year = self.runtime = None
         self.rating = self.votes = None
         self.genres = []
         self.persons = {'cast': [], 'director': [], 'writer': []}
@@ -265,9 +288,111 @@ class SeriesProcessor(object):
             SeriesContributors.objects.create(
                     person=p, series=m, function='W', rank=idx)
         for genre in self.genres:
-            print genre
             g = Genre.add(genre)
             m.genres.add(g)
         return m
 
+
 #TODO: Class to add Episode
+class EpisodeProcessor(object):
+    __reg_title_vf_s = r'(.+)::.*France'
+    __reg_runtime_s = r'\d+'
+    title = title_fr = year = id_imdb = poster = rating = None
+    votes = plot = language = genres = persons = None
+    imdb_infos = None
+    runtime = 0
+
+    def __init__(self):
+        self.__reg_title_vf = re.compile(self.__reg_title_vf_s)
+        self.__reg_runtime = re.compile(self.__reg_runtime_s)
+        self.ia = IMDb()
+
+    def reset_infos(self):
+        self.title = self.title_fr = self.id_imdb = self.poster = ''
+        self.plot = self.language = ''
+        self.air_date = self.runtime = None
+        self.rating = self.votes = None
+        self.genres = []
+        self.persons = {'cast': [], 'director': [], 'writer': []}
+        self.imdb_infos = None
+        self.runtime = 0
+
+    def get_title_fr(self):
+        if 'akas' in self.imdb_infos.keys():
+            for title in self.imdb_infos['akas']:
+                match = self.__reg_title_vf.search(title)
+                if match:
+                    return match.group(1)
+        return None
+
+    def process(self, id_imdb, season, ep_nb):
+        self.reset_infos()
+        self.id_imdb = id_imdb
+        print id_imdb
+        self.imdb_infos = self.ia.get_movie(id_imdb)
+        self.season = season
+        self.ep_nb = ep_nb
+        existing = Episode.objects.filter(id_imdb=self.id_imdb).exists()
+        if existing:
+            print "Episode already in the database"
+            return Episode.objects.get(id_imdb=self.id_imdb)
+        self.title = self.imdb_infos['title']
+        if 'original air date' in self.imdb_infos.keys():
+            self.air_date = dateparse.parse(
+                    self.imdb_infos['original air date'])
+        else:
+            self.air_date = date.today()
+        self.title_fr = self.get_title_fr()
+        if self.title_fr:
+            self.title_fr = self.title_fr.encode('utf-8')
+        else:
+            self.title_fr = self.title
+        if 'runtimes' in self.imdb_infos.keys():
+            match = self.__reg_runtime.search(self.imdb_infos['runtimes'][0])
+            if match:
+                self.runtime = match.group(0)
+        if 'cover url' in self.imdb_infos.keys():
+            self.poster = self.imdb_infos['cover url']
+        if 'rating' in self.imdb_infos.keys():
+            self.rating = self.imdb_infos['rating']
+        if 'votes' in self.imdb_infos.keys():
+            self.votes = self.imdb_infos['votes']
+        if 'plot outline' in self.imdb_infos.keys():
+            self.plot = self.imdb_infos['plot outline']
+        if 'genres' in self.imdb_infos.keys():
+            self.genres = self.imdb_infos['genres']
+        if 'cast' in self.imdb_infos.keys():
+            self.persons['cast'] = self.imdb_infos['cast']
+        if 'director' in self.imdb_infos.keys():
+            self.persons['director'] = self.imdb_infos['director']
+        if 'writer' in self.imdb_infos.keys():
+            self.persons['writer'] = self.imdb_infos['writer']
+        #TODO take care of encoding where it needs to.
+
+        m = self.save()
+        return m
+
+    def save(self):
+        m = Episode.objects.create(
+                title=self.title, title_fr=self.title_fr,
+                date=self.air_date, id_imdb=self.id_imdb,
+                poster=self.poster, rating=self.rating,
+                votes=self.votes, plot=self.plot,
+                season=self.season, episode_number=self.ep_nb,
+                runtime=self.runtime)
+        m.save()
+        for idx, actor in enumerate(self.persons['cast']):
+            p = Person.add(actor)
+            EpisodeContributors.objects.create(
+                    person=p, episode=m, function='A', rank=idx)
+        for idx, director in enumerate(self.persons['director']):
+            p = Person.add(director)
+            EpisodeContributors.objects.create(
+                    person=p, episode=m, function='D', rank=idx)
+        for idx, writer in enumerate(self.persons['writer']):
+            p = Person.add(writer)
+            p.save()
+            EpisodeContributors.objects.create(
+                    person=p, episode=m, function='W', rank=idx)
+        return m
+

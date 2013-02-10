@@ -58,6 +58,9 @@ class Season(models.Model):
         self.number_of_episodes = self.episode_set.count()
         self.save()
 
+    def __unicode__(self):
+        return '%s S%d'%(self.series.title, self.season_number)
+
 
 class Episode(models.Model):
     season = models.ForeignKey(Season)
@@ -67,13 +70,18 @@ class Episode(models.Model):
     id_imdb = models.CharField(max_length=7, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
     rating = models.FloatField()
-    nb_rates = models.IntegerField(verbose_name='number of rates')
+    votes = models.IntegerField(verbose_name='number of votes')
     plot = models.TextField()
     date = models.DateField()
     runtime = models.IntegerField()
     persons = models.ManyToManyField(
         Person, verbose_name='list of people involved',
         through='EpisodeContributors')
+
+    def __unicode__(self):
+        return '%s S%dE%d'%(
+                self.season.series.title, self.season.season_number,
+                self.episode_number)
 
 
 class SeriesContributors(models.Model):
@@ -90,17 +98,29 @@ class EpisodeContributors(models.Model):
     person = models.ForeignKey(Person)
     episode = models.ForeignKey(Episode)
     function = models.CharField(max_length=1)
+    rank = models.IntegerField(null=True)
+
+    def __unicode__(self):
+        return 'Person: %s - %s S%dE%d'%(
+                self.person.name, self.episode.season.series.title,
+                self.episode.season.season_number, self.episode.episode_number)
 
 
 class SeriesDirectory(models.Model):
     series = models.ForeignKey(Series)
     location = models.CharField(max_length=256)
 
+    def __unicode__(self):
+        return 'Location: ' + self.location
+
 
 class SeasonDirectory(models.Model):
     season = models.ForeignKey(Season)
     location = models.CharField(max_length=256)
     quality = models.CharField(max_length=5)
+
+    def __unicode__(self):
+        return 'Location: ' + self.location
 
 
 class EpisodeDirectory(models.Model):
@@ -110,4 +130,7 @@ class EpisodeDirectory(models.Model):
     size = models.IntegerField(verbose_name='size in MB')
     addition_date = models.DateTimeField(
         auto_now_add=True, verbose_name='addition date')
+
+    def __unicode__(self):
+        return 'Location: ' + self.location
 
