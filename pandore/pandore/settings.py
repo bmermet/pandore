@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'people',
     'movies',
     'series',
+    'logs'
 )
 
 # A sample logging configuration. The only tangible logging
