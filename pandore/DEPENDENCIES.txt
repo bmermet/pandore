@@ -4,5 +4,6 @@
 - guessit
 - dateutil
 - simplejson
-- haystack
+- django-haystack
 - pysolr
+- django-bootstrap-toolkit

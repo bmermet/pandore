@@ -131,6 +131,9 @@ INSTALLED_APPS = (
     # Haystack as search engine
     'haystack',
 
+    # Bootstrap
+    'bootstrap_toolkit',
+
     'people',
     'movies',
     'series',
