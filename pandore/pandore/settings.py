@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'people',
     'movies',
     'series',
+    'search',
     'logs'
 )
 
