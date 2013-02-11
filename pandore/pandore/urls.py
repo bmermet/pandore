@@ -23,4 +23,5 @@ urlpatterns = patterns('',
         template='search/search.html',
         form_class=AdvancedMovieSearchForm
         ), name='haystack.urls'),
+    url(r'^movies/', include('movies.urls')),
 )
