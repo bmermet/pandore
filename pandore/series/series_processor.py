@@ -9,7 +9,7 @@ from series.models import (Series, Season, Episode, Genre, SeriesContributors,
                            EpisodeContributors, SeriesDirectory,
                            SeasonDirectory, EpisodeDirectory)
 from people.models import Person
-from movies.utils import get_size
+from utils.utils import get_size
 
 
 class SeriesDirectoryProcessor(object):
