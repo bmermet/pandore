@@ -10,6 +10,7 @@ from series.models import (Series, Season, Episode, Genre, SeriesContributors,
                            SeasonDirectory, EpisodeDirectory)
 from people.models import Person
 from utils.utils import get_size
+import utils.logger
 
 
 class SeriesDirectoryProcessor(object):
@@ -160,7 +161,7 @@ class EpisodeDirectoryProcessor():
 
         #Size of the directory in Mo
         #TODO understand why the result is different from du
-        self.size = (get_size(self.path) + 500000) // 1000000
+        self.size = (get_size(self.path, logger.SERIES) + 500000) // 1000000
 
         # Finally, create the EpisodeDirectory
         return EpisodeDirectory.objects.create(episode=self.episode,

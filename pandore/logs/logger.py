@@ -3,7 +3,6 @@ from logs.models import Log
 
 MOVIES = 0
 SERIES = 1
-MOVIES_UTILS = 2
 
 
 class logger(object):
