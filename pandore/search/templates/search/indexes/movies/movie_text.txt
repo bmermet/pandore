@@ -1,0 +1,9 @@
+{{ object.title }}
+{{ object.title_fr }}
+{{ object.title_int }}
+{{ object.year }}
+{{ object.rating }}
+{{ object.runtime }}
+{% for person in object.persons.all %}
+  {{ person.name }}
+{% endfor %}
