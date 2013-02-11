@@ -1,0 +1,8 @@
+# List of dependencies for Pandore :
+- IMDbPY
+- requests
+- guessit
+- dateutil
+- simplejson
+- haystack
+- pysolr
