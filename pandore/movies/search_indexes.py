@@ -8,6 +8,7 @@ class MovieIndex(indexes.SearchIndex, indexes.Indexable):
     year = indexes.IntegerField(model_attr='year')
     runtime = indexes.IntegerField(model_attr='runtime')
     rating = indexes.FloatField(model_attr='rating')
+    autocomplete = indexes.EdgeNgramField(use_template=True)
     suggestions = indexes.FacetCharField()
 
     def prepare(self, obj):
