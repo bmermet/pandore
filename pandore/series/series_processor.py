@@ -9,9 +9,10 @@ from series.models import (Series, Season, Episode, Genre, SeriesContributors,
                            EpisodeContributors, SeriesDirectory,
                            SeasonDirectory, EpisodeDirectory)
 from people.models import Person
-from utils.utils import get_size
-import utils.logger
+from utils_functions.utils import get_size
+import logs.logger as log
 
+NOT_ON_IMDB_CODE = 666
 
 class SeriesDirectoryProcessor(object):
     __reg_dir_s = r'(.*/)?(.+)'
@@ -158,10 +159,17 @@ class EpisodeDirectoryProcessor():
                 self.episode = self.episode_processor.process(
                         series_imdb[self.season_nb][self.episode_nb].movieID,
                         self.season, self.episode_nb)
+            else:
+                print "Episode doesn't exists in IMDb database: %s"%(
+                        self.filename)
+                l = log.logger(log.SERIES)
+                l.error("Episode doesn't exists in IMDb database: %s"%(
+                        self.filename), NOT_ON_IMDB_CODE)
+                return None
 
         #Size of the directory in Mo
         #TODO understand why the result is different from du
-        self.size = (get_size(self.path, logger.SERIES) + 500000) // 1000000
+        self.size = (get_size(self.path, log.SERIES) + 500000) // 1000000
 
         # Finally, create the EpisodeDirectory
         return EpisodeDirectory.objects.create(episode=self.episode,

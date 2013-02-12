@@ -5,7 +5,7 @@ import os
 from imdb import IMDb
 from movies.models import Movie, Genre, MovieContributors, Directory
 from people.models import Person
-from utils.utils import get_size
+from utils_functions.utils import get_size
 
 
 __DEBUG__ = True
