@@ -255,8 +255,12 @@ class SeriesProcessor(object):
             self.poster = self.imdb_infos['cover url']
         if 'rating' in self.imdb_infos.keys():
             self.rating = self.imdb_infos['rating']
+        else:
+            self.rating = 0
         if 'votes' in self.imdb_infos.keys():
             self.votes = self.imdb_infos['votes']
+        else:
+            self.votes = 0
         if 'plot outline' in self.imdb_infos.keys():
             self.plot = self.imdb_infos['plot outline']
         if 'language codes' in self.imdb_infos.keys():
@@ -364,8 +368,12 @@ class EpisodeProcessor(object):
             self.poster = self.imdb_infos['cover url']
         if 'rating' in self.imdb_infos.keys():
             self.rating = self.imdb_infos['rating']
+        else:
+            self.rating = 0
         if 'votes' in self.imdb_infos.keys():
             self.votes = self.imdb_infos['votes']
+        else:
+            self.votes = 0
         if 'plot outline' in self.imdb_infos.keys():
             self.plot = self.imdb_infos['plot outline']
         if 'genres' in self.imdb_infos.keys():
