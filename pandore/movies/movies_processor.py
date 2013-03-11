@@ -6,6 +6,7 @@ from imdb import IMDb
 from movies.models import Movie, Genre, MovieContributors, Directory
 from people.models import Person
 from utils_functions.utils import get_size
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 
@@ -67,9 +68,34 @@ class DirectoryProcessor(object):
             self.size = 0
         else:
             #self.size = (get_size(directory) + 500000) // 1000000
-            self.size = 0 
+            self.size = 0
         self.save()
         return True
+
+    def force(self, directory, id_imdb, fakedir=False):
+        self.reset_infos()
+        if fakedir:
+            self.directory = directory
+        else:
+            self.directory = os.path.abspath(directory).replace(
+                settings.FTP_ROOT, '', 1)
+        dir = self.__reg_dir.match(self.directory).group(2) + '/'
+        guess = guessit.guess_movie_info(dir.decode('utf-8'))
+        if 'screenSize' in guess:
+            self.quality = guess['screenSize']
+        else:
+            self.quality = 'SD'
+        m = self.movie.process(id_imdb)
+        self.size = 0
+        try:
+            existing = Directory.objects.get(location=self.directory)
+            existing.movie = m
+        except ObjectDoesNotExist:
+            Directory.objects.create(
+                    movie=m, location=self.directory,
+                    quality=self.quality, size=self.size)
+
+
 
     def save(self):
         m = self.movie.process(self.id_imdb)
