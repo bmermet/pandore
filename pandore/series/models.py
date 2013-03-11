@@ -26,7 +26,7 @@ class Series(models.Model):
     rating = models.FloatField()
     votes = models.IntegerField(verbose_name='number of votes')
     plot = models.TextField()
-    language = models.CharField(max_length=2, verbose_name='main language')
+    language = models.CharField(max_length=3, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
     persons = models.ManyToManyField(
         Person, verbose_name='list of people involved',
@@ -111,14 +111,14 @@ class EpisodeContributors(models.Model):
     rank = models.IntegerField(null=True)
 
     def __unicode__(self):
-        return 'Person: %s - %s S%dE%d'%(
+        return 'Person: %s - %s S%dE%d' % (
                 self.person.name, self.episode.season.series.title,
                 self.episode.season.season_number, self.episode.episode_number)
 
 
 class SeriesDirectory(models.Model):
     series = models.ForeignKey(Series)
-    location = models.CharField(max_length=256)
+    location = models.CharField(max_length=255, unique=True)
 
     def __unicode__(self):
         return 'Location: ' + self.location
@@ -126,7 +126,7 @@ class SeriesDirectory(models.Model):
 
 class SeasonDirectory(models.Model):
     season = models.ForeignKey(Season)
-    location = models.CharField(max_length=256)
+    location = models.CharField(max_length=255, unique=True)
     quality = models.CharField(max_length=5)
 
     def __unicode__(self):
@@ -135,7 +135,7 @@ class SeasonDirectory(models.Model):
 
 class EpisodeDirectory(models.Model):
     episode = models.ForeignKey(Episode)
-    location = models.CharField(max_length=256)
+    location = models.CharField(max_length=255, unique=True)
     quality = models.CharField(max_length=5)
     size = models.IntegerField(verbose_name='size in MB')
     addition_date = models.DateTimeField(

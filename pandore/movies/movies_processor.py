@@ -27,9 +27,12 @@ class DirectoryProcessor(object):
         self.directory = None
         self.processed = False
 
-    def process(self, directory):
+    def process(self, directory, fakedir=False):
         self.reset_infos()
-        self.directory = os.path.abspath(directory)
+        if fakedir:
+            self.directory = directory
+        else:
+            self.directory = os.path.abspath(directory)
         existing = Directory.objects.filter(location=self.directory).exists()
         if existing:
             print 'Directory is already present in the database'
@@ -57,7 +60,10 @@ class DirectoryProcessor(object):
             self.quality = 'SD'
         #Size of the directory in Mo
         #TODO understand why the result is different from du
-        self.size = (get_size(self.directory) + 500000) // 1000000
+        if fakedir:
+            self.size = 0
+        else:
+            self.size = (get_size(self.directory) + 500000) // 1000000
         self.save()
         return True
 
@@ -72,8 +78,9 @@ class MovieProcessor(object):
     __reg_title_vf_s = r'(.+)::.*France'
     __reg_title_int_s = r'(.+)::.*International'
     __reg_runtime_s = r'\d+'
-    title = title_fr = year = runtime = id_imdb = poster = rating = None
-    votes = plot = language = genres = persons = None
+    title = title_fr = id_imdb = poster = ""
+    runtime = rating = year = votes = -1
+    plot = language = genres = persons = None
     imdb_infos = None
 
     def __init__(self):
@@ -85,7 +92,7 @@ class MovieProcessor(object):
     def reset_infos(self):
         self.title = self.title_fr = self.id_imdb = self.poster = ''
         self.plot = self.language = ''
-        self.year = self.runtime = self.rating = self.votes = None
+        self.year = self.runtime = self.rating = self.votes = '-1'
         self.genres = []
         self.persons = {'cast': [], 'director': [], 'writer': []}
         self.imdb_infos = None

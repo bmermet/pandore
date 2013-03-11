@@ -29,12 +29,54 @@ class SeriesDirectoryProcessor(object):
         self.episode_dir_processor = EpisodeDirectoryProcessor()
         self.ia = IMDb()
         self.series_on_imdb = None
+        self.cache = {}
 
     def reset_infos(self):
         self.title = self.quality = self.year = self.id_imdb = None
         self.directory = None
         self.processed = False
         self.series_on_imdb = None
+
+    def process_fake(self, directory):
+        if directory in self.cache:
+            return self.cache[directory]
+        print "Cache Miss"
+        self.reset_infos()
+        self.directory = directory
+
+        self.title = self.__reg_dir.match(self.directory).group(2)
+        self.title = self.title.replace('.', ' ')
+
+        filter = SeriesDirectory.objects.filter(location=self.directory)
+        if filter.exists():
+            self.series = filter[0].series
+            self.id_imdb = self.series.id_imdb
+            self.series_on_imdb = self.ia.get_movie(
+                self.id_imdb)
+        else:
+            # Search series on bing
+            #self.year = str(guess['year']) if 'year' in guess else ''
+            search_string = 'site:imdb.com tv series %s' % (
+                    self.title)
+            print search_string
+            r = requests.get(
+                    'http://www.bing.com/search', params={'q': search_string})
+            match = self.__reg_bing.search(r.content)
+            if not match:
+                print r.url
+                print "Bing wasn't able to find this series, skipping"
+                raise RuntimeError(
+                    "Bing wasn't able to find this series, skipping")
+            self.id_imdb = match.group('id')
+            print self.id_imdb
+            self.series_on_imdb = self.ia.get_movie(
+                self.id_imdb)
+            self.title = self.series_on_imdb['title']
+            self.save()
+        self.ia.update(self.series_on_imdb, 'episodes')
+        self.cache[self.directory] = (
+            self.series, self.series_on_imdb['episodes'])
+        return(self.series, self.series_on_imdb['episodes'])
 
     def process(self, directory):
         self.reset_infos()
@@ -107,6 +149,83 @@ class EpisodeDirectoryProcessor():
         self.series_on_imdb = None
         self.episode_processor = EpisodeProcessor()
 
+    def process_fake(self, directories):
+        sdp = SeriesDirectoryProcessor()
+        for directory in directories:
+            print directory
+            self.reset_infos()
+            self.path = directory
+            self.filename = os.path.basename(self.path)
+            self.season_directory = os.path.dirname(self.path)
+            self.series_directory = os.path.dirname(self.season_directory)
+
+            # Check if the episode is already in database
+            filter = EpisodeDirectory.objects.filter(location=self.path)
+            if filter.exists():
+                continue
+            (series_bdd, series_imdb) = sdp.process_fake(self.series_directory)
+
+            # Extract infos from directory name
+            guess = guessit.guess_episode_info(self.filename)
+            if 'season' in guess.keys() and 'episodeNumber' in guess.keys():
+                self.season_nb = guess['season']
+                self.episode_nb = guess['episodeNumber']
+            else:
+                print self.path
+                print 'Error: Episode wrongly named'
+                continue
+            self.quality = guess['screenSize'] if 'screenSize' in guess else 'SD'
+
+            # Create Season
+            filter = Season.objects.filter(series=series_bdd,
+                                        season_number=self.season_nb)
+            if filter.exists():
+                self.season = filter[0]
+            else:
+                self.season = Season.objects.create(series=series_bdd,
+                                                    season_number=self.season_nb,
+                                                    number_of_episodes=0)
+
+            filter = SeasonDirectory.objects.filter(season=self.season,
+                                                    location=self.season_directory,
+                                                    quality=self.quality)
+            if filter.exists():
+                self.season_dir = filter[0]
+            else:
+                self.season_dir = SeasonDirectory.objects.create(
+                        season=self.season, location=self.season_directory,
+                        quality=self.quality)
+
+            filter = Episode.objects.filter(season=self.season,
+                                            episode_number=self.episode_nb)
+            if filter.exists():
+                self.episode = filter[0]
+            else:
+                print self.season_nb, self.episode_nb
+                if (self.season_nb in series_imdb.keys() and
+                        self.episode_nb in series_imdb[self.season_nb].keys()):
+                    self.episode = self.episode_processor.process(
+                            series_imdb[self.season_nb][self.episode_nb].movieID,
+                            self.season, self.episode_nb)
+                else:
+                    print "Episode doesn't exists in IMDb database: %s"%(
+                            self.filename)
+                    l = log.logger(log.SERIES)
+                    l.error("Episode doesn't exists in IMDb database: %s"%(
+                            self.filename), NOT_ON_IMDB_CODE)
+                    continue
+
+            #Size of the directory in Mo
+            #TODO understand why the result is different from du
+            self.size = -1
+
+            # Finally, create the EpisodeDirectory
+            EpisodeDirectory.objects.create(episode=self.episode,
+                                                location=self.path,
+                                                quality=self.quality,
+                                                size=self.size)
+
+
     def process(self, directory, series_bdd, series_imdb):
         self.reset_infos()
         self.path = os.path.abspath(directory)
@@ -138,7 +257,7 @@ class EpisodeDirectoryProcessor():
             self.season = Season.objects.create(series=series_bdd,
                                                 season_number=self.season_nb,
                                                 number_of_episodes=0)
-            
+
         filter = SeasonDirectory.objects.filter(season=self.season,
                                                 location=self.season_directory,
                                                 quality=self.quality)

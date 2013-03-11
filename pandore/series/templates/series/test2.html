@@ -1,0 +1,8 @@
+{{ object.title }}
+{{ object.title_int }}
+{{ object.title_fr }}
+{{ object.id_imdb }}
+{{ object.begin_year }}
+{% for person in object.persons.all %}
+  {{ person.name }}
+{% endfor %}

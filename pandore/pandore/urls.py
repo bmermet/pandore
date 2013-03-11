@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     # Movie search
-    url(r'^search/', include('search.urls')),
-    url(r'^movies/', include('movies.urls')),
+    url(r'^search/', include('search.urls', namespace='search')),
+    url(r'^movies/', include('movies.urls', namespace='movies')),
+    url(r'^series/', include('series.urls', namespace='series')),
 )

@@ -7,7 +7,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^autocomplete/', 'search.views.autocomplete'),
+    url(r'^autocomplete/', 'search.views.autocomplete', name='autocomplete'),
+    url(r'^json/', 'search.json.search', name='json'),
     # Movie search
     url(r'.*', SearchView(
         template='search/search.html',

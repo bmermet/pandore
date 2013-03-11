@@ -21,15 +21,15 @@ class Movie(models.Model):
     title_fr = models.CharField(max_length=256, verbose_name='french title')
     title_int = models.CharField(max_length=256,
             verbose_name='international title')
-    year = models.IntegerField(null=True)
-    runtime = models.IntegerField(null=True)
+    year = models.IntegerField(default=-1)
+    runtime = models.IntegerField(default=-1)
     id_imdb = models.CharField(
             max_length=7, unique=True, verbose_name='imdb id')
     poster = models.CharField(max_length=256, verbose_name='poster url')
-    rating = models.FloatField(null=True)
-    votes = models.IntegerField(null=True, verbose_name='number of votes')
+    rating = models.FloatField(default=-1)
+    votes = models.IntegerField(default=-1, verbose_name='number of votes')
     plot = models.TextField()
-    language = models.CharField(max_length=2, verbose_name='main language')
+    language = models.CharField(max_length=3, verbose_name='main language')
     genres = models.ManyToManyField(Genre)
     persons = models.ManyToManyField(Person,
             verbose_name='list of people involved',
@@ -48,7 +48,7 @@ class MovieContributors(models.Model):
     person = models.ForeignKey(Person)
     movie = models.ForeignKey(Movie)
     function = models.CharField(max_length=1, choices=PROFESSION_CODE)
-    rank = models.IntegerField(null=True)
+    rank = models.IntegerField(default=-1)
 
     def __unicode__(self):
         return 'Person : ' + self.person.name + '; Movie : ' + self.movie.title
@@ -56,9 +56,9 @@ class MovieContributors(models.Model):
 
 class Directory(models.Model):
     movie = models.ForeignKey(Movie)
-    location = models.CharField(max_length=256, unique=True)
+    location = models.CharField(max_length=255, unique=True)
     quality = models.CharField(max_length=5)
-    size = models.IntegerField(null=True, verbose_name='size in MB')
+    size = models.IntegerField(default=-1, verbose_name='size in MB')
     addition_date = models.DateTimeField(auto_now_add=True,
             verbose_name='addition date')
 

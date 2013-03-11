@@ -1,0 +1,31 @@
+{{ object.title }}
+{{ object.title_fr }}
+{{ object.date }}
+{{ object.id_imdb }}
+{{ object.season.series.title }}
+{{ object.season.series.title_fr }}
+{{ object.season.series.title_int }}
+{{ object.season.series.alias }}
+S{{ object.season.season_number|stringformat:"02d" }} E{{ object.episode_number|stringformat:"02d" }}
+S{{ object.season.season_number|stringformat:"02d" }}E{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number|stringformat:"02d" }}x{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number|stringformat:"02d" }}X{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number|stringformat:"02d" }}.{{ object.episode_number|stringformat:"02d" }}
+S{{ object.season.season_number }} E{{ object.episode_number|stringformat:"02d" }}
+S{{ object.season.season_number }}E{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number }}x{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number }}X{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number }}.{{ object.episode_number|stringformat:"02d" }}
+S{{ object.season.season_number }} E{{ object.episode_number }}
+S{{ object.season.season_number }}E{{ object.episode_number }}
+{{ object.season.season_number }}x{{ object.episode_number }}
+{{ object.season.season_number }}X{{ object.episode_number }}
+{{ object.season.season_number }}.{{ object.episode_number }}
+{{ object.season.season_number }}{{ object.episode_number }}
+{{ object.season.season_number }} {{ object.episode_number }}
+{{ object.season.season_number|stringformat:"02d" }} {{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number|stringformat:"02d" }}{{ object.episode_number|stringformat:"02d" }}
+{{ object.season.season_number}}{{ object.episode_number|stringformat:"02d" }}
+{% for person in object.persons.all %}
+  {{ person.name }}
+{% endfor %}

@@ -12,3 +12,5 @@ Run again the './manage.py build_solr_schema > schema.xml' and put the output in
 Create the index with './manage.py rebuild_index'
 
 And then it should work :)
+
+Note to self : Don't forget to re-run Solr after changing the search_indexes structures (not needed when you only modify the templates)
