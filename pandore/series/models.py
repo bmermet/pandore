@@ -126,7 +126,7 @@ class SeriesDirectory(models.Model):
 
 class SeasonDirectory(models.Model):
     season = models.ForeignKey(Season)
-    location = models.CharField(max_length=255, unique=True)
+    location = models.CharField(max_length=255)
     quality = models.CharField(max_length=5)
 
     def __unicode__(self):

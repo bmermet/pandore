@@ -11,6 +11,7 @@ from series.models import (Series, Season, Episode, Genre, SeriesContributors,
 from people.models import Person
 from utils_functions.utils import get_size
 import logs.logger as log
+from django.conf import settings
 
 NOT_ON_IMDB_CODE = 666
 
@@ -42,7 +43,7 @@ class SeriesDirectoryProcessor(object):
             return self.cache[directory]
         print "Cache Miss"
         self.reset_infos()
-        self.directory = directory
+        self.directory = directory.split(settings.FTP_ROOT, '', 1)
 
         self.title = self.__reg_dir.match(self.directory).group(2)
         self.title = self.title.replace('.', ' ')
@@ -80,13 +81,11 @@ class SeriesDirectoryProcessor(object):
 
     def process(self, directory):
         self.reset_infos()
-        self.directory = os.path.abspath(directory)
+        self.directory = os.path.abspath(directory).replace(
+            settings.FTP_ROOT, '', 1)
 
-        dir = self.__reg_dir.match(self.directory).group(2) + '/'
-        guess = guessit.guess_movie_info(dir)
-        if not 'title' in guess:
-            print 'Error while processing ' + self.directory
-            return False
+        self.title = self.__reg_dir.match(self.directory).group(2)
+        self.title = self.title.replace('.', ' ')
 
         filter = SeriesDirectory.objects.filter(location=self.directory)
         if filter.exists():
@@ -94,9 +93,8 @@ class SeriesDirectoryProcessor(object):
             self.id_imdb = self.series.id_imdb
         else:
             # Search series on bing
-            self.year = str(guess['year']) if 'year' in guess else ''
-            search_string = 'site:imdb.com tv series %s %s' % (
-                    guess['title'], self.year)
+            search_string = 'site:imdb.com tv series %s' % (
+                    self.title)
             r = requests.get(
                     'http://www.bing.com/search', params={'q': search_string})
             match = self.__reg_bing.search(r.content)
@@ -106,11 +104,14 @@ class SeriesDirectoryProcessor(object):
                 return False
             self.id_imdb = match.group('id')
             print self.id_imdb
-            self.title = guess['title']
+            self.series_on_imdb = self.ia.get_movie(
+                self.id_imdb)
+            self.ia.update(self.series_on_imdb, 'episodes')
+            self.title = self.series_on_imdb['title']
             self.save()
 
         # Search episodes in series directory
-        dirs = [self.directory]
+        dirs = [directory]
         for d in dirs:
             print d
             if not self.__reg_episode.search(d):
@@ -154,7 +155,7 @@ class EpisodeDirectoryProcessor():
         for directory in directories:
             print directory
             self.reset_infos()
-            self.path = directory
+            self.path = directory.replace(settings.FTP_ROOT, '', 1)
             self.filename = os.path.basename(self.path)
             self.season_directory = os.path.dirname(self.path)
             self.series_directory = os.path.dirname(self.season_directory)
@@ -228,7 +229,8 @@ class EpisodeDirectoryProcessor():
 
     def process(self, directory, series_bdd, series_imdb):
         self.reset_infos()
-        self.path = os.path.abspath(directory)
+        self.path = os.path.abspath(directory).replace(
+            settings.FTP_ROOT, '', 1)
         self.filename = os.path.basename(self.path)
         self.season_directory = os.path.dirname(self.path)
 
@@ -288,7 +290,7 @@ class EpisodeDirectoryProcessor():
 
         #Size of the directory in Mo
         #TODO understand why the result is different from du
-        self.size = (get_size(self.path, log.SERIES) + 500000) // 1000000
+        self.size = (get_size(directory, log.SERIES) + 500000) // 1000000
 
         # Finally, create the EpisodeDirectory
         return EpisodeDirectory.objects.create(episode=self.episode,

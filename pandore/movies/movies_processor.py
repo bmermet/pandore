@@ -6,6 +6,7 @@ from imdb import IMDb
 from movies.models import Movie, Genre, MovieContributors, Directory
 from people.models import Person
 from utils_functions.utils import get_size
+from django.conf import settings
 
 
 __DEBUG__ = True
@@ -32,7 +33,8 @@ class DirectoryProcessor(object):
         if fakedir:
             self.directory = directory
         else:
-            self.directory = os.path.abspath(directory)
+            self.directory = os.path.abspath(directory).replace(
+                settings.FTP_ROOT, '', 1)
         existing = Directory.objects.filter(location=self.directory).exists()
         if existing:
             print 'Directory is already present in the database'
@@ -60,10 +62,12 @@ class DirectoryProcessor(object):
             self.quality = 'SD'
         #Size of the directory in Mo
         #TODO understand why the result is different from du
+        #TODO make it actually work :S
         if fakedir:
             self.size = 0
         else:
-            self.size = (get_size(self.directory) + 500000) // 1000000
+            #self.size = (get_size(directory) + 500000) // 1000000
+            self.size = 0 
         self.save()
         return True
 

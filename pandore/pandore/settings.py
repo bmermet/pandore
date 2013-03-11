@@ -6,6 +6,7 @@ import django
 # used as starting points for various other paths
 DJANGO_ROOT = os.path.dirname(os.path.realpath(django.__file__))
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+FTP_ROOT = '/data/ftp'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -19,9 +20,9 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'pandore',          # Or path to database file if using sqlite3.
-        'USER': 'root',                             # Not used with sqlite3.
-        'PASSWORD': 'pm3901',                         # Not used with sqlite3.
+        'NAME': 'django',          # Or path to database file if using sqlite3.
+        'USER': 'django',                             # Not used with sqlite3.
+        'PASSWORD': '8IFIR5l7',                         # Not used with sqlite3.
         'HOST': '',                             # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                             # Set to empty string for default. Not used with sqlite3.
     }
@@ -100,7 +101,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'series.middleware.JsonExceptionMiddleware'
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -133,7 +133,7 @@ INSTALLED_APPS = (
     'haystack',
 
     # Bootstrap
-    'bootstrap_toolkit',
+    #'bootstrap_toolkit',
 
     'people',
     'movies',
