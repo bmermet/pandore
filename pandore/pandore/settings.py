@@ -19,12 +19,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'django',          # Or path to database file if using sqlite3.
-        'USER': 'django',                             # Not used with sqlite3.
-        'PASSWORD': '8IFIR5l7',                         # Not used with sqlite3.
-        'HOST': '',                             # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                             # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': '',    # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '',      # Or path to database file if using sqlite3.
+        'USER': '',      # Not used with sqlite3.
+        'PASSWORD': '',  # Not used with sqlite3.
+        'HOST': '',      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',      # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -101,6 +101,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'series.middleware.JsonExceptionMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -131,9 +132,6 @@ INSTALLED_APPS = (
 
     # Haystack as search engine
     'haystack',
-
-    # Bootstrap
-    #'bootstrap_toolkit',
 
     'people',
     'movies',
