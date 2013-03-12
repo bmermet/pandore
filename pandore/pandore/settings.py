@@ -176,3 +176,8 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr'
     },
 }
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
