@@ -115,12 +115,13 @@ class SeriesDirectoryProcessor(object):
         for d in dirs:
             print d
             if not self.__reg_episode.search(d):
-                for d2 in [d+'/'+dir for dir in os.listdir(d)
-                           if os.path.isdir(d+'/'+dir)]:
+                for d2 in [d + '/' + dir for dir in os.listdir(d)
+                           if os.path.isdir(d + '/' + dir)]:
                     dirs.append(os.path.abspath(d2))
             else:
                 # Check if the episode is already in database
-                filter = EpisodeDirectory.objects.filter(location=d)
+                filter = EpisodeDirectory.objects.filter(
+                    location=d.replace(settings.FTP_ROOT, '', 1))
                 if not filter.exists():
                     if not self.series_on_imdb:
                         self.series_on_imdb = self.ia.get_movie(
